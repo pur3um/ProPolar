@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- TODO: after deployment, set og:url, og:image, and twitter:image to the live URL -->
+  <meta name="title" content="ProPolar: Progressive Polar Decomposition for Implicit Neural Representations">
+  <meta name="description"
+    content="ProPolar orthogonalizes momentum within a low-rank subspace whose rank grows during INR training, paired with a rank-aware warmup-stable-decay learning-rate schedule.">
+  <meta name="keywords"
+    content="implicit neural representations, INR, optimizer, polar decomposition, low-rank momentum, orthogonalization, NeRF, SDF, super-resolution, NeurIPS 2026">
+  <meta name="author" content="Pureum Kim, Younggeon Ryu, Dongyoon Lee, Hae Beom Lee, Kyong Hwan Jin">
+  <meta name="robots" content="index, follow">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ProPolar Project Page">
+  <meta property="og:title" content="ProPolar: Progressive Polar Decomposition for Implicit Neural Representations">
+  <meta property="og:description"
+    content="Momentum orthogonalization in a low-rank subspace whose rank grows with INR training, paired with a rank-aware learning-rate schedule.">
+  <meta property="og:url" content="https://USERNAME.github.io/ProPolar/">
+  <meta property="og:image" content="https://USERNAME.github.io/ProPolar/static/images/propolar_teaser_og.jpg">
+  <meta property="og:image:width" content="1600">
+  <meta property="og:image:height" content="900">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ProPolar: Progressive Polar Decomposition for INRs">
+  <meta name="twitter:description"
+    content="Momentum orthogonalization in a low-rank subspace whose rank grows with INR training.">
+  <meta name="twitter:image" content="https://USERNAME.github.io/ProPolar/static/images/propolar_teaser_og.jpg">
+
+  <meta name="citation_title" content="ProPolar: Progressive Polar Decomposition for Implicit Neural Representations">
+  <meta name="citation_author" content="Kim, Pureum">
+  <meta name="citation_author" content="Ryu, Younggeon">
+  <meta name="citation_author" content="Lee, Dongyoon">
+  <meta name="citation_author" content="Lee, Hae Beom">
+  <meta name="citation_author" content="Jin, Kyong Hwan">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="NeurIPS">
+
+  <meta name="theme-color" content="#17357a">
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preload" as="image" href="static/images/propolar_teaser_web.jpg">
+
+  <title>ProPolar: Progressive Polar Decomposition for INRs | NeurIPS 2026</title>
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="static/css/inter.css">
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/academicons.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="static/css/academicons.min.css">
+  </noscript>
+  <link rel="stylesheet" href="static/css/propolar.css">
+
+  <script defer src="static/js/index.js"></script>
+  <script defer src="static/js/propolar.js"></script>
+
+  <!-- MathJax for equations -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+
+    <!-- ============================== HERO ============================== -->
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <div class="columns is-centered">
+            <div class="column has-text-centered">
+
+              <h1 class="title is-2 publication-title">ProPolar: Progressive Polar Decomposition<br>for Implicit
+                Neural Representations</h1>
+
+              <!-- Author names are plain text. To link a homepage, wrap a name as
+                   <a href="https://..." target="_blank" rel="noopener">Name</a> -->
+              <div class="is-size-5 publication-authors" style="margin-top: 1rem;">
+                <span class="author-block"><span class="author-name">Pureum Kim</span>,</span>
+                <span class="author-block"><span class="author-name">Younggeon Ryu</span>,</span>
+                <span class="author-block"><span class="author-name">Dongyoon Lee</span>,</span>
+                <br>
+                <span class="author-block"><span class="author-name">Hae Beom Lee</span><sup>&dagger;</sup>,</span>
+                <span class="author-block"><span class="author-name">Kyong Hwan Jin</span><sup>&dagger;</sup></span>
+              </div>
+
+              <div class="is-size-6 publication-authors" style="margin-top: 0.4rem;">
+                <span class="author-block">Korea University,
+                  <a href="https://ipa.korea.ac.kr/" target="_blank" rel="noopener">IPA Lab</a></span>
+                <br>
+                <span class="eql-cntrb"><small><sup>&dagger;</sup>Corresponding authors</small></span>
+              </div>
+
+              <div class="is-size-5 publication-venue-line">
+                <strong>NeurIPS 2026</strong>
+              </div>
+
+              <div class="column has-text-centered icon-row">
+                <div class="publication-links">
+                  <!-- TODO: replace "#" with the OpenReview, PDF, and arXiv URLs.
+                       A link left as "#" stays inert, so it never jumps to the top of the page. -->
+                  <span class="link-block">
+                    <a href="#" target="_blank" rel="noopener noreferrer"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fas fa-file-alt"></i></span>
+                      <span>OpenReview</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#" target="_blank" rel="noopener noreferrer"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                      <span>PDF</span>
+                    </a>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#" target="_blank" rel="noopener noreferrer"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="ai ai-arxiv"></i></span>
+                      <span>arXiv</span>
+                    </a>
+                  </span>
+
+                  <!-- Code release pending. When the repository is public, replace this span with
+                       <a href="https://github.com/..." target="_blank" rel="noopener noreferrer"
+                          class="external-link button is-normal is-rounded is-dark">
+                         <span class="icon"><i class="fab fa-github"></i></span><span>Code</span></a> -->
+                  <span class="link-block">
+                    <span class="external-link button is-normal is-rounded is-dark is-soon" aria-disabled="true"
+                      title="The code will be released soon">
+                      <span class="icon"><i class="fab fa-github"></i></span>
+                      <span>Code</span>
+                      <span class="soon-pill">Coming soon</span>
+                    </span>
+                  </span>
+
+                  <span class="link-block">
+                    <a href="#BibTeX" class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon"><i class="ai ai-google-scholar"></i></span>
+                      <span>BibTeX</span>
+                    </a>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== TEASER ============================== -->
+    <section class="teaser-wall-section">
+      <div class="teaser-wall-container">
+        <figure class="teaser-wall" role="button" tabindex="0" data-lightbox="static/images/propolar_teaser_full.jpg"
+          aria-label="Open the full-resolution overview of ProPolar">
+          <img src="static/images/propolar_teaser_web.jpg" width="1800" height="921" fetchpriority="high"
+            decoding="async"
+            alt="Overview of ProPolar with rank and learning-rate schedules, low-rank polar orthogonalization, vanilla NeRF tables, reconstructions for image fitting, SDF, NeRF, and fine-tuning, and effective-rank and frequency-band plots.">
+          <div class="teaser-overlay" aria-hidden="true">
+            <span class="teaser-overlay-title">ProPolar</span>
+            <span class="teaser-overlay-sub">Progressive Polar Decomposition<br>for Implicit Neural
+              Representations</span>
+            <span class="teaser-overlay-venue">NeurIPS 2026</span>
+          </div>
+          <figcaption class="teaser-wall-hint"><i class="fas fa-search-plus"></i> Click to zoom</figcaption>
+        </figure>
+        <p class="teaser-wall-caption">
+          <strong>ProPolar at a glance.</strong> Rank and learning-rate schedules with low-rank polar
+          orthogonalization, vanilla NeRF results on LLFF and Synthetic scenes, reconstructions for image fitting,
+          SDF, NeRF, and fine-tuning, and effective-rank and frequency-band analyses.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== ABSTRACT ============================== -->
+    <section class="section hero is-light section-tight">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <h2 class="title is-3">Abstract</h2>
+            <div class="content has-text-justified">
+              <p>
+                Implicit neural representations (INRs) capture global low-frequency structure during the early stage
+                of training and then refine localized high-frequency details, afterwards. However, standard optimizers
+                are agnostic to the coarse-to-fine learning behavior of INRs. Such optimizers accumulate a gradient
+                matrix in momentum buffer and retain components misaligned with the dominant low-frequency directions
+                in the early stage. We propose a progressively growing rank scheduler and a rank-aware learning-rate
+                scheduler for enhancing a subspace-based momentum optimization, where a momentum matrix is updated
+                within a low-rank subspace. The rank schedule expands the subspace during training, and the scheduler
+                holds the peak learning rate through rank growth so that the added subspace contributes to fine-detail
+                recovery. Experiments on image fitting, single-image super-resolution (SISR), and neural radiance
+                field optimization show that the proposed method improves convergence and peak reconstruction quality
+                over competitive optimizers. The largest gains appear in the high-frequency refinement stage, mirroring
+                the coarse-to-fine progression that the rank schedule targets. A significant study on hyperparameter
+                optimization (HPO) on NeRF further confirms that these gains persist under matched search budgets.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== TL;DR ============================== -->
+    <section class="section section-tight">
+      <div class="container is-max-desktop">
+        <div class="tldr-box">
+          <strong>TL;DR</strong> ProPolar orthogonalizes each momentum matrix within a low-rank subspace, grows the
+          subspace rank by a cosine schedule, and holds the peak learning rate until the rank saturates. Early updates
+          concentrate on dominant directions tied to low-frequency structure, and later updates admit directions for
+          fine detail.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== WHY PROPOLAR ============================== -->
+    <section class="section section-tight">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">Why ProPolar? Fixed Rank in Coarse-to-Fine Training</h2>
+        <p>
+          INR training follows a coarse-to-fine progression. Global low-frequency structure forms first, and
+          high-frequency detail follows. Capacity demand grows with training, so a low-rank update subspace suits the
+          early stage and a high-rank subspace suits the later stage.
+        </p>
+        <p>Standard optimizers keep one update representation for the whole run.</p>
+        <blockquote>
+          <strong>They are agnostic to the training stage.</strong> A full-rank momentum matrix accumulates every
+          gradient component, including components misaligned with the dominant low-frequency directions in the early
+          stage. A fixed rank assigns capacity to less informative directions early and constrains the update subspace
+          during detail refinement.
+        </blockquote>
+        <p>
+          ProPolar aligns the update subspace with the training stage. The subspace rank starts from a data-dependent
+          value and grows by a cosine schedule. A rank-aware learning-rate schedule holds the peak step size through
+          rank growth so that the added directions contribute to fine-detail recovery.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== METHOD ============================== -->
+    <section class="section hero is-light section-tight" id="method">
+      <div class="container is-max-desktop content">
+        <h2 class="title is-3">How ProPolar Works</h2>
+
+        <figure class="pp-figure">
+          <div class="zoomable" role="button" tabindex="0" data-lightbox="static/images/overview.png"
+            aria-label="Enlarge the ProPolar overview figure">
+            <img src="static/images/overview.png" width="1701" height="883" loading="lazy" decoding="async"
+              alt="ProPolar overview. The rank schedule grows over training, the rank-aware WSD schedule holds the peak learning rate, and the momentum matrix is orthogonalized in a low-rank subspace.">
+          </div>
+          <figcaption>
+            <strong>Overview.</strong> The rank schedule \(r_t\) expands the momentum subspace from dominant low-rank
+            directions to higher-rank directions. The orthonormal basis \(Q_t\in\mathbb{R}^{m\times r_t}\) defines
+            the active subspace for projected polar orthogonalization. The rank-aware WSD schedule \(\gamma_t\) holds
+            the peak step size during rank growth, and decay begins after the rank saturates.
+          </figcaption>
+        </figure>
+
+        <p style="margin-top: 1.5rem;">
+          ProPolar updates every hidden-layer weight matrix \(W\in\mathbb{R}^{m\times n}\) with the five steps below
+          and applies Adam to non-matrix parameters.
+        </p>
+
+        <h4 class="title is-5">Step 1. Accumulate Nesterov momentum.</h4>
+        <p>For each hidden-layer matrix, ProPolar keeps a momentum matrix \(M_t\) with coefficient \(\beta\).</p>
+        <div class="equation-box has-text-centered">
+          \[ M_t = \beta M_{t-1} + \nabla_W \mathcal{L}_t\big(W_{t-1} - \beta M_{t-1}\big) \]
+        </div>
+
+        <h4 class="title is-5">Step 2. Set the rank for this iteration.</h4>
+        <p>
+          During the first \(T_0\) iterations, the rank \(r_t\) is the smallest \(k\) whose spectral energy
+          \(E_t(k)\) reaches the threshold \(\rho\), and
+          \(r^{\mathrm{init}} = \lceil \operatorname{median}(r_0,\dots,r_{T_0-1}) \rceil\).
+          The rank then grows from \(r^{\mathrm{init}}\) to \(r^{\max}\) over \(T_g\) iterations by a cosine
+          schedule and stays at \(r^{\max}\) afterward.
+        </p>
+        <div class="equation-box has-text-centered">
+          \[ E_t(k) = \frac{\sum_{i=1}^{k}\sigma_{t,i}^2}{\sum_{i=1}^{d}\sigma_{t,i}^2}, \qquad
+          r_t = \min\big\{r^{\max},\ \min\{k : E_t(k)\ge\rho\}\big\}, \qquad 0\le t\lt T_0 \]
+          \[ r_t = \Big\lceil r^{\mathrm{init}} + \big(r^{\max}-r^{\mathrm{init}}\big)\,\frac{1-\cos(\pi s_t)}{2}
+          \Big\rceil, \qquad s_t = \min\Big\{1,\ \frac{t-T_0}{T_g-1}\Big\}, \qquad t\ge T_0 \]
+        </div>
+
+        <h4 class="title is-5">Step 3. Build a low-rank basis.</h4>
+        <p>
+          A Gaussian sketch \(\Omega_t\) and a thin QR decomposition give an orthonormal basis \(Q_t\) for the
+          dominant column space of \(M_t\). By randomized SVD analysis, \(Q_tQ_t^{\top}M_t\) approximates the best
+          rank-\(r_t\) truncation of \(M_t\).
+        </p>
+        <div class="equation-box has-text-centered">
+          \[ \Omega_t \sim \mathcal{N}(0,1)^{n\times r_t}, \qquad Q_t = \mathrm{qf}\big(M_t\Omega_t\big) \in
+          \mathbb{R}^{m\times r_t} \]
+        </div>
+
+        <h4 class="title is-5">Step 4. Orthogonalize in the reduced space.</h4>
+        <p>
+          Five Newton&ndash;Schulz iterations approximate the polar factor \(\mathcal{P}\) of the \(r_t\times n\)
+          reduced matrix, and \(Q_t\) maps the result back to the parameter space. Full-space orthogonalization
+          amplifies every singular direction equally, including tail directions misaligned with the dominant update
+          subspace. The reduced polar factor restricts the update to the span of \(Q_t\).
+        </p>
+        <div class="equation-box has-text-centered">
+          \[ \hat M_t = Q_t\,\mathcal{P}\big(Q_t^{\top} M_t\big), \qquad
+          W_{t+1} = (1-\eta_t\lambda)\,W_t - \eta_t\,\hat M_t \]
+        </div>
+
+        <h4 class="title is-5">Step 5. Hold the peak learning rate until rank saturation.</h4>
+        <p>
+          The rank-aware warmup-stable-decay schedule, raWSD, sets \(\eta_t = \gamma_t\,\eta_{\max}\). Decay starts
+          after all tracked layers reach \(r^{\max}\), so directions added during rank growth receive full-size steps.
+        </p>
+        <div class="equation-box has-text-centered">
+          \[ T_d = \min\big\{T-1,\ \min\{t\ge T_0 : r_t = r^{\max}\} + \Delta_{\mathrm{sat}}\big\} \]
+          \[ \gamma_t = \begin{cases}
+          \dfrac{t+1}{T_0}, &amp; 0\le t\lt T_0 \\[6pt]
+          1, &amp; T_0\le t\lt T_d \\[6pt]
+          \gamma_{\min} + (1-\gamma_{\min})\,\dfrac{T-1-t}{\max\{1,\ T-1-T_d\}}, &amp; T_d\le t\lt T
+          \end{cases} \]
+        </div>
+
+        <h4 class="title is-5">Explore the two schedules.</h4>
+        <p>
+          Move the sliders to see how the decay start follows rank saturation. Before \(T_0\) the rank follows the
+          energy threshold, and the plot draws it at \(r^{\mathrm{init}}\).
+        </p>
+        <div class="explorer" id="schedule-explorer" data-t="5000" data-rmax="256" data-gmin="0">
+          <svg viewBox="0 0 720 336" role="img" aria-label="Rank and learning-rate schedules"></svg>
+          <div class="explorer-controls">
+            <div class="explorer-control">
+              <label for="se-t0"><span>Initialization length T<sub>0</sub></span><output id="se-t0-out"
+                  for="se-t0">100</output></label>
+              <input id="se-t0" type="range" min="10" max="500" step="10" value="100">
+            </div>
+            <div class="explorer-control">
+              <label for="se-tg"><span>Rank-growth length T<sub>g</sub></span><output id="se-tg-out"
+                  for="se-tg">3,500</output></label>
+              <input id="se-tg" type="range" min="100" max="4900" step="50" value="3500">
+            </div>
+            <div class="explorer-control">
+              <label for="se-rinit"><span>Initial rank r<sup>init</sup></span><output id="se-rinit-out"
+                  for="se-rinit">16</output></label>
+              <input id="se-rinit" type="range" min="1" max="128" step="1" value="16">
+            </div>
+            <div class="explorer-control">
+              <label for="se-dsat"><span>Delay after saturation &Delta;<sub>sat</sub></span><output id="se-dsat-out"
+                  for="se-dsat">0</output></label>
+              <input id="se-dsat" type="range" min="0" max="1000" step="50" value="0">
+            </div>
+          </div>
+          <p class="explorer-readout">
+            Rank saturates at iteration <output id="se-tsat-out">&ndash;</output>.
+            Learning-rate decay starts at iteration <output id="se-td-out">&ndash;</output>.
+          </p>
+          <p class="explorer-note">Illustrative settings with T = 5,000, r<sup>max</sup> = 256, and
+            &gamma;<sub>min</sub> = 0.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== SPECTRAL INSIGHT ============================== -->
+    <section class="section section-tight" id="analysis">
+      <div class="container is-max-desktop">
+        <div class="content">
+          <h2 class="title is-3">Spectral Insight</h2>
+          <p>Two measurements on image overfitting motivate the rank schedule, and two ablations test its design.</p>
+        </div>
+
+        <div class="insight-block">
+          <div class="insight-row">
+            <div class="content">
+              <h4 class="title is-5">Effective rank grows late in training.</h4>
+              <p>
+                The normalized entropy effective rank of the momentum matrix \(M_t\) and the update
+                \(\Delta W_t = W_{t+1} - W_t\) stays low for most of training and rises in later iterations. A low
+                value means that a few leading singular values account for most of the spectrum.
+              </p>
+              <p>
+                A low-rank approximation suffices in the early stage, and more singular directions become
+                non-negligible later. This pattern matches a rank that grows over training.
+              </p>
+            </div>
+            <figure class="pp-figure" style="margin-top: 0;">
+              <div class="zoomable" role="button" tabindex="0" data-lightbox="static/images/analysis/effective_rank.png"
+                aria-label="Enlarge the effective-rank plot">
+                <img src="static/images/analysis/effective_rank.png" width="810" height="932" loading="lazy"
+                  decoding="async"
+                  alt="Normalized entropy effective rank of the momentum matrix and the update over 5,000 iterations for three layers. Both stay low and rise near the end.">
+              </div>
+              <figcaption>Normalized entropy effective rank of \(M_t\) in the top panel and \(\Delta W_t\) in the
+                bottom panel for three hidden layers.</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="insight-block">
+          <div class="content">
+            <h4 class="title is-5">Head directions carry fine detail.</h4>
+            <p>
+              Let \(\bar M_t = U_tV_t^{\top}\) denote the full polar factor of \(M_t\) and
+              \(\bar M_{t,k} = U_{t,k}V_{t,k}^{\top}\) its rank-\(k\) head. With \(k = 128\), head-only updates reduce
+              low-frequency residual energy by orders of magnitude and continue to reduce mid- and high-frequency
+              residuals. Tail-only updates stay near the initial level in mid and high bands. Update components for
+              fine-detail recovery concentrate in the head.
+            </p>
+          </div>
+          <figure class="pp-figure">
+            <div class="zoomable" role="button" tabindex="0" data-lightbox="static/images/analysis/frequency_bands.png"
+              aria-label="Enlarge the frequency-band plot">
+              <img src="static/images/analysis/frequency_bands.png" width="2255" height="947" loading="lazy"
+                decoding="async"
+                alt="Relative residual energy in low, mid, and high frequency bands for head-only and tail-only updates. Head-only curves fall steeply in all bands.">
+            </div>
+            <figcaption>Relative residual energy in low, mid, and high frequency bands over 5,000 iterations of image
+              overfitting on Kodak, for head-only and tail-only updates.</figcaption>
+          </figure>
+        </div>
+
+        <div class="insight-block">
+          <div class="content">
+            <h4 class="title is-5">Increasing rank gives the best reconstruction.</h4>
+            <p>
+              Four rank schedules share the image overfitting setting. Increasing rank reaches 27.12 dB, followed by
+              fixed rank at 26.58 dB, full rank at 26.47 dB, and decreasing rank at 26.06 dB.
+            </p>
+          </div>
+          <div class="rank-scroll">
+                <div class="rank-grid">
+                  <figure class="rank-cell">
+                    <div class="rank-full">
+                      <img src="static/images/analysis/rank_gt.jpg" alt="Ground truth, full image" width="768" height="512" loading="lazy" decoding="async">
+                      <span class="rank-box" style="left:42.65%;top:14.82%;width:8.96%;height:13.45%" aria-hidden="true"></span>
+                    </div>
+                    <img class="rank-zoom" src="static/images/analysis/rank_gt_zoom.jpg" alt="Ground truth, region in the red box" width="276" height="276" loading="lazy" decoding="async">
+                    <figcaption><span class="rank-name">Ground truth</span><span class="rank-psnr">Reference</span></figcaption>
+                  </figure>
+                  <figure class="rank-cell is-ours">
+                    <div class="rank-full">
+                      <img src="static/images/analysis/rank_increasing.jpg" alt="Increasing rank, full image" width="768" height="512" loading="lazy" decoding="async">
+                      <span class="rank-box" style="left:42.65%;top:14.82%;width:8.96%;height:13.45%" aria-hidden="true"></span>
+                    </div>
+                    <img class="rank-zoom" src="static/images/analysis/rank_increasing_zoom.jpg" alt="Increasing rank, region in the red box" width="276" height="276" loading="lazy" decoding="async">
+                    <figcaption><span class="rank-name">Increasing rank</span><span class="rank-psnr">27.12 dB</span></figcaption>
+                  </figure>
+                  <figure class="rank-cell">
+                    <div class="rank-full">
+                      <img src="static/images/analysis/rank_fixed.jpg" alt="Fixed rank, full image" width="768" height="512" loading="lazy" decoding="async">
+                      <span class="rank-box" style="left:42.65%;top:14.82%;width:8.96%;height:13.45%" aria-hidden="true"></span>
+                    </div>
+                    <img class="rank-zoom" src="static/images/analysis/rank_fixed_zoom.jpg" alt="Fixed rank, region in the red box" width="276" height="276" loading="lazy" decoding="async">
+                    <figcaption><span class="rank-name">Fixed rank</span><span class="rank-psnr">26.58 dB</span></figcaption>
+                  </figure>
+                  <figure class="rank-cell">
+                    <div class="rank-full">
+                      <img src="static/images/analysis/rank_full.jpg" alt="Full rank, full image" width="768" height="512" loading="lazy" decoding="async">
+                      <span class="rank-box" style="left:42.65%;top:14.82%;width:8.96%;height:13.45%" aria-hidden="true"></span>
+                    </div>
+                    <img class="rank-zoom" src="static/images/analysis/rank_full_zoom.jpg" alt="Full rank, region in the red box" width="276" height="276" loading="lazy" decoding="async">
+                    <figcaption><span class="rank-name">Full rank</span><span class="rank-psnr">26.47 dB</span></figcaption>
+                  </figure>
+                  <figure class="rank-cell">
+                    <div class="rank-full">
+                      <img src="static/images/analysis/rank_decreasing.jpg" alt="Decreasing rank, full image" width="768" height="512" loading="lazy" decoding="async">
+                      <span class="rank-box" style="left:42.65%;top:14.82%;width:8.96%;height:13.45%" aria-hidden="true"></span>
+                    </div>
+                    <img class="rank-zoom" src="static/images/analysis/rank_decreasing_zoom.jpg" alt="Decreasing rank, region in the red box" width="276" height="276" loading="lazy" decoding="async">
+                    <figcaption><span class="rank-name">Decreasing rank</span><span class="rank-psnr">26.06 dB</span></figcaption>
+                  </figure>
+                </div>
+              </div>
+          <p class="tab-note">The second row magnifies the region in the red box.</p>
+        </div>
+
+        <div class="insight-block">
+          <div class="content">
+            <h4 class="title is-5">raWSD pairs with rank growth.</h4>
+            <p>
+              With raWSD, ProPolar improves over its non-WSD counterpart in all eight NeRF scenes. Muon with WSD drops
+              in six of eight scenes. Holding the peak step size during rank growth matches the learning-rate schedule
+              to the expanding subspace.
+            </p>
+          </div>
+          <div class="figure-pair">
+            <figure class="pp-figure" style="margin-top: 0.5rem;">
+              <div class="zoomable" role="button" tabindex="0" data-lightbox="static/images/analysis/wsd_ours.png"
+                aria-label="Enlarge the WSD ablation chart for ProPolar">
+                <img src="static/images/analysis/wsd_ours.png" width="1977" height="977" loading="lazy"
+                  decoding="async" alt="PSNR per NeRF scene for ProPolar with and without WSD. WSD raises PSNR in every scene.">
+              </div>
+              <figcaption>ProPolar with and without WSD.</figcaption>
+            </figure>
+            <figure class="pp-figure" style="margin-top: 0.5rem;">
+              <div class="zoomable" role="button" tabindex="0" data-lightbox="static/images/analysis/wsd_muon.png"
+                aria-label="Enlarge the WSD ablation chart for Muon">
+                <img src="static/images/analysis/wsd_muon.png" width="1977" height="977" loading="lazy"
+                  decoding="async" alt="PSNR per NeRF scene for Muon with and without WSD. WSD lowers PSNR in six of eight scenes.">
+              </div>
+              <figcaption>Muon with and without WSD.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== RESULTS ============================== -->
+    <section class="section hero is-light section-tight" id="results">
+      <div class="container is-max-desktop">
+        <div class="content">
+          <h2 class="title is-3">Results</h2>
+          <p>
+            ProPolar changes the optimizer and keeps the architecture and training configuration of each baseline.
+            Light-blue cells mark ProPolar. Bold marks the best value and underline marks the second best within each
+            comparison.
+          </p>
+        </div>
+
+        <div class="results-pair">
+          <div>
+            <h4 class="title is-5 table-heading">Image fitting on Kodak24</h4>
+            <p class="table-caption">Mean over 24 images.</p>
+            <div class="table-scroll">
+                <table class="result-table">
+                  <thead>
+                    <tr><th scope="col">Model</th><th scope="col" class="cell-left">Optimizer</th><th scope="col">PSNR&nbsp;&uarr;</th><th scope="col">SSIM&nbsp;&uarr;</th><th scope="col">LPIPS&nbsp;&darr;</th></tr>
+                  </thead>
+                  <tbody>
+                  <tr><th scope="rowgroup" rowspan="2">ReLU MLP</th><td class="opt cell-left">Adam</td><td>22.55</td><td>0.5404</td><td>0.5835</td></tr>
+                  <tr class="ours-row"><td class="opt cell-left">ProPolar</td><td><strong>28.70</strong></td><td><strong>0.7855</strong></td><td><strong>0.3417</strong></td></tr>
+                  <tr><th scope="rowgroup" rowspan="2">SIREN</th><td class="opt cell-left">Adam</td><td>33.67</td><td>0.9104</td><td>0.0754</td></tr>
+                  <tr class="ours-row"><td class="opt cell-left">ProPolar</td><td><strong>35.05</strong></td><td><strong>0.9320</strong></td><td><strong>0.0751</strong></td></tr>
+                  </tbody>
+                </table>
+              </div>
+          </div>
+          <div>
+            <h4 class="title is-5 table-heading">Super-resolution &times;4 on DIV2K</h4>
+            <p class="table-caption">PSNR&nbsp;&uarr; across INR architectures.</p>
+            <div class="table-scroll">
+                <table class="result-table">
+                  <thead>
+                    <tr><th scope="col">Model</th><th scope="col">Adam</th><th scope="col">Muon</th><th scope="col" class="ours-col">ProPolar</th></tr>
+                  </thead>
+                  <tbody>
+                  <tr><th scope="row">ReLU MLP</th><td>19.65</td><td><span class="second">22.01</span></td><td class="ours-col"><strong>23.47</strong></td></tr>
+                  <tr><th scope="row">SIREN</th><td>24.32</td><td><strong>24.73</strong></td><td class="ours-col"><strong>24.73</strong></td></tr>
+                  <tr><th scope="row">WIRE</th><td>23.97</td><td><span class="second">24.62</span></td><td class="ours-col"><strong>24.68</strong></td></tr>
+                  <tr><th scope="row">FINER</th><td><span class="second">25.23</span></td><td>25.19</td><td class="ours-col"><strong>25.45</strong></td></tr>
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </div>
+
+        <div class="results-block">
+          <h4 class="title is-5">Neural radiance fields</h4>
+          <div class="nerf-block" id="nerf-block" data-metric="psnr">
+                <div class="nerf-toolbar">
+                  <div class="pp-tabs" role="tablist" aria-label="NeRF benchmark" data-tabs>
+                    <button class="pp-tab" type="button" role="tab" id="tab-llff" aria-controls="panel-llff" aria-selected="true" tabindex="0">Vanilla NeRF, LLFF</button>
+                    <button class="pp-tab" type="button" role="tab" id="tab-synthetic" aria-controls="panel-synthetic" aria-selected="false" tabindex="-1">Vanilla NeRF, Synthetic</button>
+                    <button class="pp-tab" type="button" role="tab" id="tab-mipnerf" aria-controls="panel-mipnerf" aria-selected="false" tabindex="-1">Mip-NeRF</button>
+                    <button class="pp-tab" type="button" role="tab" id="tab-ngp" aria-controls="panel-ngp" aria-selected="false" tabindex="-1">Instant-NGP</button>
+                    <button class="pp-tab" type="button" role="tab" id="tab-tpe" aria-controls="panel-tpe" aria-selected="false" tabindex="-1">Tuned with TPE</button>
+                  </div>
+                  <div class="metric-toggle" role="group" aria-label="Metric" data-metric-toggle="nerf-block">
+                    <button type="button" data-metric="psnr" aria-pressed="true">PSNR&nbsp;&uarr;</button>
+                    <button type="button" data-metric="ssim" aria-pressed="false">SSIM&nbsp;&uarr;</button>
+                  </div>
+                </div>
+              <div class="pp-panel" role="tabpanel" id="panel-llff" aria-labelledby="tab-llff" tabindex="0">
+                <div class="table-scroll">
+                  <table class="result-table">
+                    <thead><tr><th scope="col">Method</th><th scope="col">Fern</th><th scope="col">Flower</th><th scope="col">Fortress</th><th scope="col">Horns</th><th scope="col">Leaves</th><th scope="col">Orchids</th><th scope="col">Room</th><th scope="col">T-Rex</th><th scope="col" class="avg-col">Avg.</th></tr></thead>
+                    <tbody data-metric="psnr">
+                      <tr><th scope="row">Adam</th><td>26.38</td><td>27.47</td><td>31.74</td><td>27.79</td><td>21.92</td><td>21.10</td><td>31.96</td><td>26.90</td><td class="avg-col">26.91</td></tr>
+                      <tr><th scope="row">MoFaSGD</th><td>26.24</td><td>27.30</td><td>31.42</td><td>27.32</td><td>21.56</td><td>20.98</td><td>32.01</td><td>26.71</td><td class="avg-col">26.69</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">26.84</span></td><td><span class="second">28.12</span></td><td><span class="second">32.21</span></td><td><span class="second">28.60</span></td><td><span class="second">22.16</span></td><td><span class="second">21.42</span></td><td><span class="second">33.17</span></td><td><span class="second">27.79</span></td><td class="avg-col"><span class="second">27.53</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>27.22</strong></td><td><strong>28.68</strong></td><td><strong>32.82</strong></td><td><strong>29.02</strong></td><td><strong>22.54</strong></td><td><strong>21.80</strong></td><td><strong>33.72</strong></td><td><strong>28.44</strong></td><td class="avg-col"><strong>28.03</strong></td></tr>
+                    </tbody>
+                    <tbody data-metric="ssim">
+                      <tr><th scope="row">Adam</th><td>0.8322</td><td>0.8566</td><td>0.9036</td><td>0.8702</td><td>0.7737</td><td>0.7135</td><td>0.9515</td><td>0.9000</td><td class="avg-col">0.8501</td></tr>
+                      <tr><th scope="row">MoFaSGD</th><td>0.8200</td><td>0.8435</td><td>0.8946</td><td>0.8489</td><td>0.7454</td><td>0.6934</td><td>0.9481</td><td>0.8884</td><td class="avg-col">0.8352</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">0.8507</span></td><td><span class="second">0.8777</span></td><td><span class="second">0.9184</span></td><td><span class="second">0.8934</span></td><td><span class="second">0.7880</span></td><td><span class="second">0.7318</span></td><td><span class="second">0.9604</span></td><td><span class="second">0.9175</span></td><td class="avg-col"><span class="second">0.8672</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>0.8584</strong></td><td><strong>0.8880</strong></td><td><strong>0.9270</strong></td><td><strong>0.8984</strong></td><td><strong>0.8014</strong></td><td><strong>0.7508</strong></td><td><strong>0.9629</strong></td><td><strong>0.9280</strong></td><td class="avg-col"><strong>0.8768</strong></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="tab-note">Scene-level results at 100K iterations with the original hyperparameter configuration of vanilla NeRF.</p>
+              </div>
+              <div class="pp-panel" role="tabpanel" id="panel-synthetic" aria-labelledby="tab-synthetic" tabindex="0" hidden>
+                <div class="table-scroll">
+                  <table class="result-table">
+                    <thead><tr><th scope="col">Method</th><th scope="col">Chair</th><th scope="col">Drums</th><th scope="col">Ficus</th><th scope="col">Hotdog</th><th scope="col">Lego</th><th scope="col">Materials</th><th scope="col">Mic</th><th scope="col">Ship</th><th scope="col" class="avg-col">Avg.</th></tr></thead>
+                    <tbody data-metric="psnr">
+                      <tr><th scope="row">Adam</th><td>32.57</td><td>25.08</td><td>28.02</td><td>35.40</td><td>30.23</td><td>28.32</td><td>32.04</td><td>28.47</td><td class="avg-col">30.02</td></tr>
+                      <tr><th scope="row">MoFaSGD</th><td>31.57</td><td>24.76</td><td>27.45</td><td>34.77</td><td>29.90</td><td>28.51</td><td>31.02</td><td>28.17</td><td class="avg-col">29.26</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">33.22</span></td><td><span class="second">25.22</span></td><td><span class="second">28.28</span></td><td><span class="second">36.23</span></td><td><span class="second">30.95</span></td><td><span class="second">29.19</span></td><td><span class="second">32.64</span></td><td><span class="second">28.87</span></td><td class="avg-col"><span class="second">30.58</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>34.28</strong></td><td><strong>25.72</strong></td><td><strong>29.30</strong></td><td><strong>37.36</strong></td><td><strong>31.94</strong></td><td><strong>29.95</strong></td><td><strong>33.59</strong></td><td><strong>29.57</strong></td><td class="avg-col"><strong>31.46</strong></td></tr>
+                    </tbody>
+                    <tbody data-metric="ssim">
+                      <tr><th scope="row">Adam</th><td>0.9702</td><td>0.9217</td><td>0.9566</td><td>0.9757</td><td>0.9536</td><td>0.9483</td><td>0.9742</td><td>0.8576</td><td class="avg-col">0.9447</td></tr>
+                      <tr><th scope="row">MoFaSGD</th><td>0.9600</td><td>0.9165</td><td>0.9497</td><td>0.9719</td><td>0.9488</td><td>0.9501</td><td>0.9688</td><td>0.8569</td><td class="avg-col">0.9374</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">0.9747</span></td><td><span class="second">0.9242</span></td><td><span class="second">0.9602</span></td><td><span class="second">0.9790</span></td><td><span class="second">0.9622</span></td><td><span class="second">0.9585</span></td><td><span class="second">0.9775</span></td><td><span class="second">0.8683</span></td><td class="avg-col"><span class="second">0.9506</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>0.9791</strong></td><td><strong>0.9304</strong></td><td><strong>0.9669</strong></td><td><strong>0.9817</strong></td><td><strong>0.9681</strong></td><td><strong>0.9628</strong></td><td><strong>0.9800</strong></td><td><strong>0.8773</strong></td><td class="avg-col"><strong>0.9558</strong></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="tab-note">Scene-level results at 100K iterations with the original hyperparameter configuration of vanilla NeRF.</p>
+              </div>
+              <div class="pp-panel" role="tabpanel" id="panel-mipnerf" aria-labelledby="tab-mipnerf" tabindex="0" hidden>
+                <div class="table-scroll">
+                  <table class="result-table">
+                    <thead><tr><th scope="col">Method</th><th scope="col">Chair</th><th scope="col">Drums</th><th scope="col">Ficus</th><th scope="col">Hotdog</th><th scope="col">Lego</th><th scope="col">Materials</th><th scope="col">Mic</th><th scope="col">Ship</th><th scope="col" class="avg-col">Avg.</th></tr></thead>
+                    <tbody data-metric="psnr">
+                      <tr><th scope="row">AdamW</th><td><span class="second">35.24</span></td><td><span class="second">25.64</span></td><td><span class="second">29.50</span></td><td><span class="second">37.75</span></td><td><span class="second">33.07</span></td><td><span class="second">30.55</span></td><td><span class="second">34.35</span></td><td><span class="second">29.95</span></td><td class="avg-col"><span class="second">32.01</span></td></tr>
+                      <tr><th scope="row">Muon</th><td>34.68</td><td>25.51</td><td>29.17</td><td>37.63</td><td>32.45</td><td>30.25</td><td>34.30</td><td>29.78</td><td class="avg-col">31.72</td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>35.58</strong></td><td><strong>25.71</strong></td><td><strong>29.67</strong></td><td><strong>38.25</strong></td><td><strong>33.56</strong></td><td><strong>31.12</strong></td><td><strong>34.91</strong></td><td><strong>30.28</strong></td><td class="avg-col"><strong>32.39</strong></td></tr>
+                    </tbody>
+                    <tbody data-metric="ssim">
+                      <tr><th scope="row">AdamW</th><td><span class="second">0.9829</span></td><td><strong>0.9292</strong></td><td><span class="second">0.9675</span></td><td><span class="second">0.9831</span></td><td><span class="second">0.9743</span></td><td><span class="second">0.9653</span></td><td><span class="second">0.9814</span></td><td><span class="second">0.8784</span></td><td class="avg-col"><span class="second">0.9578</span></td></tr>
+                      <tr><th scope="row">Muon</th><td>0.9799</td><td>0.9239</td><td>0.9658</td><td>0.9818</td><td>0.9693</td><td>0.9620</td><td>0.9807</td><td>0.8746</td><td class="avg-col">0.9548</td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>0.9839</strong></td><td><span class="second">0.9289</span></td><td><strong>0.9698</strong></td><td><strong>0.9848</strong></td><td><strong>0.9770</strong></td><td><strong>0.9691</strong></td><td><strong>0.9838</strong></td><td><strong>0.8866</strong></td><td class="avg-col"><strong>0.9605</strong></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="tab-note">Synthetic NeRF scenes at 200K iterations.</p>
+              </div>
+              <div class="pp-panel" role="tabpanel" id="panel-ngp" aria-labelledby="tab-ngp" tabindex="0" hidden>
+                <div class="table-scroll">
+                  <table class="result-table">
+                    <thead><tr><th scope="col">Method</th><th scope="col">Chair</th><th scope="col">Drums</th><th scope="col">Ficus</th><th scope="col">Hotdog</th><th scope="col">Lego</th><th scope="col">Materials</th><th scope="col">Mic</th><th scope="col">Ship</th><th scope="col" class="avg-col">Avg.</th></tr></thead>
+                    <tbody data-metric="psnr">
+                      <tr><th scope="row">Adam</th><td><span class="second">29.41</span></td><td><span class="second">21.90</span></td><td><span class="second">26.95</span></td><td>32.19</td><td><span class="second">28.24</span></td><td>25.35</td><td><span class="second">29.69</span></td><td>24.27</td><td class="avg-col"><span class="second">27.25</span></td></tr>
+                      <tr><th scope="row">Muon</th><td>28.79</td><td>21.73</td><td>21.91</td><td><span class="second">32.37</span></td><td>27.02</td><td><span class="second">25.80</span></td><td>24.13</td><td><span class="second">25.04</span></td><td class="avg-col">25.84</td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>30.04</strong></td><td><strong>23.08</strong></td><td><strong>27.01</strong></td><td><strong>33.83</strong></td><td><strong>29.05</strong></td><td><strong>27.51</strong></td><td><strong>30.28</strong></td><td><strong>26.69</strong></td><td class="avg-col"><strong>28.44</strong></td></tr>
+                    </tbody>
+                    <tbody data-metric="ssim">
+                      <tr><th scope="row">Adam</th><td><span class="second">0.9373</span></td><td>0.8598</td><td><span class="second">0.9317</span></td><td><span class="second">0.9629</span></td><td><span class="second">0.9284</span></td><td>0.8861</td><td><span class="second">0.9642</span></td><td><span class="second">0.8311</span></td><td class="avg-col"><span class="second">0.9127</span></td></tr>
+                      <tr><th scope="row">Muon</th><td>0.9270</td><td><span class="second">0.8813</span></td><td>0.8730</td><td>0.9555</td><td>0.9013</td><td><span class="second">0.9095</span></td><td>0.9472</td><td>0.8101</td><td class="avg-col">0.9006</td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>0.9420</strong></td><td><strong>0.8980</strong></td><td><strong>0.9405</strong></td><td><strong>0.9646</strong></td><td><strong>0.9338</strong></td><td><strong>0.9286</strong></td><td><strong>0.9689</strong></td><td><strong>0.8412</strong></td><td class="avg-col"><strong>0.9272</strong></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="tab-note">Synthetic NeRF scenes under the 1-second training budget of Instant-NGP.</p>
+              </div>
+              <div class="pp-panel" role="tabpanel" id="panel-tpe" aria-labelledby="tab-tpe" tabindex="0" hidden>
+                <div class="table-scroll">
+                  <table class="result-table">
+                    <thead><tr><th scope="col">Method</th><th scope="col">Chair</th><th scope="col">Drums</th><th scope="col">Ficus</th><th scope="col">Hotdog</th><th scope="col">Lego</th><th scope="col">Materials</th><th scope="col">Mic</th><th scope="col">Ship</th><th scope="col" class="avg-col">Avg.</th></tr></thead>
+                    <tbody data-metric="psnr">
+                      <tr class="group-row"><th scope="colgroup" colspan="10">Fixed hyperparameters</th></tr>
+                      <tr><th scope="row">Adam</th><td>32.57</td><td>25.08</td><td>28.02</td><td>35.40</td><td>30.23</td><td>28.32</td><td>32.04</td><td>28.47</td><td class="avg-col">30.02</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">33.22</span></td><td><span class="second">25.22</span></td><td><span class="second">28.28</span></td><td><span class="second">36.23</span></td><td><span class="second">30.95</span></td><td><span class="second">29.19</span></td><td><span class="second">32.64</span></td><td><span class="second">28.87</span></td><td class="avg-col"><span class="second">30.58</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>34.28</strong></td><td><strong>25.72</strong></td><td><strong>29.30</strong></td><td><strong>37.36</strong></td><td><strong>31.94</strong></td><td><strong>29.95</strong></td><td><strong>33.59</strong></td><td><strong>29.57</strong></td><td class="avg-col"><strong>31.46</strong></td></tr>
+                      <tr class="group-row"><th scope="colgroup" colspan="10">Tuned with TPE</th></tr>
+                      <tr><th scope="row">Adam</th><td>32.93</td><td>25.20</td><td>28.33</td><td>37.35</td><td>30.61</td><td>28.37</td><td>32.62</td><td>28.51</td><td class="avg-col">30.49</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">34.19</span></td><td><strong>25.73</strong></td><td><strong>29.30</strong></td><td><span class="second">37.40</span></td><td><span class="second">31.66</span></td><td><span class="second">29.55</span></td><td><span class="second">33.64</span></td><td><span class="second">29.48</span></td><td class="avg-col"><span class="second">31.37</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>34.37</strong></td><td><span class="second">25.61</span></td><td><strong>29.30</strong></td><td><strong>37.48</strong></td><td><strong>32.03</strong></td><td><strong>29.95</strong></td><td><strong>33.71</strong></td><td><strong>29.64</strong></td><td class="avg-col"><strong>31.51</strong></td></tr>
+                    </tbody>
+                    <tbody data-metric="ssim">
+                      <tr class="group-row"><th scope="colgroup" colspan="10">Fixed hyperparameters</th></tr>
+                      <tr><th scope="row">Adam</th><td>0.9702</td><td>0.9217</td><td>0.9566</td><td>0.9757</td><td>0.9536</td><td>0.9483</td><td>0.9742</td><td>0.8576</td><td class="avg-col">0.9447</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">0.9747</span></td><td><span class="second">0.9242</span></td><td><span class="second">0.9602</span></td><td><span class="second">0.9790</span></td><td><span class="second">0.9622</span></td><td><span class="second">0.9585</span></td><td><span class="second">0.9775</span></td><td><span class="second">0.8683</span></td><td class="avg-col"><span class="second">0.9506</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>0.9791</strong></td><td><strong>0.9304</strong></td><td><strong>0.9669</strong></td><td><strong>0.9817</strong></td><td><strong>0.9681</strong></td><td><strong>0.9628</strong></td><td><strong>0.9800</strong></td><td><strong>0.8773</strong></td><td class="avg-col"><strong>0.9558</strong></td></tr>
+                      <tr class="group-row"><th scope="colgroup" colspan="10">Tuned with TPE</th></tr>
+                      <tr><th scope="row">Adam</th><td>0.9702</td><td>0.9259</td><td>0.9568</td><td>0.9775</td><td>0.9552</td><td>0.9485</td><td>0.9750</td><td>0.8618</td><td class="avg-col">0.9464</td></tr>
+                      <tr><th scope="row">Muon</th><td><span class="second">0.9773</span></td><td><strong>0.9317</strong></td><td><span class="second">0.9656</span></td><td><strong>0.9821</strong></td><td><span class="second">0.9651</span></td><td><span class="second">0.9597</span></td><td><span class="second">0.9802</span></td><td><strong>0.8813</strong></td><td class="avg-col"><span class="second">0.9554</span></td></tr>
+                      <tr class="ours-row"><th scope="row">ProPolar</th><td><strong>0.9793</strong></td><td><span class="second">0.9293</span></td><td><strong>0.9666</strong></td><td><strong>0.9821</strong></td><td><strong>0.9688</strong></td><td><strong>0.9627</strong></td><td><strong>0.9804</strong></td><td><span class="second">0.8774</span></td><td class="avg-col"><strong>0.9558</strong></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="tab-note">Synthetic NeRF scenes at 100K iterations. Each optimizer receives 20 TPE trials, and the configuration with the highest validation PSNR is evaluated once on the test set. Averages in this tab are computed from the per-scene values.</p>
+              </div>
+              </div>
+        </div>
+
+        <div class="results-block">
+          <h4 class="title is-5">Training cost</h4>
+          <div class="table-scroll">
+                <table class="result-table">
+                  <thead>
+                    <tr><th scope="col">Method</th><th scope="col">GPU memory, GB</th><th scope="col">Time per iteration, ms</th><th scope="col">Total time, s</th><th scope="col">Optimizer step, ms</th></tr>
+                  </thead>
+                  <tbody>
+                  <tr><th scope="row">Adam</th><td>2.97</td><td>96.63</td><td>966.35</td><td>5.23</td></tr>
+                  <tr><th scope="row">Muon</th><td>2.97</td><td>107.22</td><td>1072.16</td><td>19.75</td></tr>
+                  <tr><th scope="row">Shampoo, F = 10</th><td>4.57</td><td>166.86</td><td>1668.62</td><td>88.25</td></tr>
+                  <tr><th scope="row">Shampoo, F = 100</th><td>4.57</td><td>106.54</td><td>1065.44</td><td>28.00</td></tr>
+                  <tr class="ours-row"><th scope="row">ProPolar</th><td>2.97</td><td>112.70</td><td>1126.96</td><td>25.45</td></tr>
+                  </tbody>
+                </table>
+              </div>
+          <p class="tab-note">
+            Lego scene with 1.19M trainable parameters, timed over 10K iterations after 50 warm-up iterations. Like
+            Muon, ProPolar adds optimizer time over Adam through the polar step. GPU memory matches Adam.
+          </p>
+        </div>
+
+        <div class="content" style="margin-top: 1.5rem;">
+          <p>The paper reports vanilla NeRF at 200K iterations and the TPE search spaces in the appendix.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== QUALITATIVE ============================== -->
+    <section class="section section-tight" id="qualitative">
+      <div class="container is-max-desktop">
+        <div class="content">
+          <h2 class="title is-3">Qualitative Comparison</h2>
+          <p>
+            Drag the divider to compare each baseline with ProPolar on the same scene. Zoom magnifies the region that
+            the paper marks with a red box.
+          </p>
+        </div>
+
+        <div class="cmp-grid">
+          <figure class="cmp-card">
+                <div class="cmp-view" style="aspect-ratio: 768 / 512" data-left="Adam" tabindex="0" role="slider"
+                  aria-label="Image fitting, ReLU MLP, Adam versus ProPolar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <img class="cmp-img" src="static/images/qualitative/kodak_relu_adam.jpg" alt="Kodak image fitted by a ReLU MLP with Adam" width="768" height="512" loading="lazy" decoding="async" draggable="false">
+                  <div class="cmp-top"><img class="cmp-img" src="static/images/qualitative/kodak_relu_ours.jpg" alt="Kodak image fitted by a ReLU MLP with ProPolar" width="768" height="512" loading="lazy" decoding="async" draggable="false"></div>
+                  <span class="cmp-divider" aria-hidden="true"></span>
+                  <span class="cmp-knob" aria-hidden="true"></span>
+                  <span class="cmp-tag cmp-tag-left" aria-hidden="true">Adam</span>
+                  <span class="cmp-tag cmp-tag-right" aria-hidden="true">ProPolar</span>
+                </div>
+                <figcaption class="cmp-caption">
+                  <span><span class="cmp-title">Image fitting, ReLU MLP</span><span class="cmp-note">Kodak. The black diagonal band shows per-pixel absolute error.</span></span>
+                </figcaption>
+              </figure>
+              <figure class="cmp-card">
+                <div class="cmp-view" style="aspect-ratio: 768 / 512" data-left="Adam" tabindex="0" role="slider"
+                  aria-label="Image fitting, SIREN, Adam versus ProPolar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <img class="cmp-img" src="static/images/qualitative/kodak_siren_adam.jpg" alt="Kodak image fitted by SIREN with Adam" width="768" height="512" loading="lazy" decoding="async" draggable="false">
+                  <div class="cmp-top"><img class="cmp-img" src="static/images/qualitative/kodak_siren_ours.jpg" alt="Kodak image fitted by SIREN with ProPolar" width="768" height="512" loading="lazy" decoding="async" draggable="false"></div>
+                  <span class="cmp-divider" aria-hidden="true"></span>
+                  <span class="cmp-knob" aria-hidden="true"></span>
+                  <span class="cmp-tag cmp-tag-left" aria-hidden="true">Adam</span>
+                  <span class="cmp-tag cmp-tag-right" aria-hidden="true">ProPolar</span>
+                </div>
+                <figcaption class="cmp-caption">
+                  <span><span class="cmp-title">Image fitting, SIREN</span><span class="cmp-note">Kodak. The black diagonal band shows per-pixel absolute error.</span></span>
+                </figcaption>
+              </figure>
+              <figure class="cmp-card" data-zoom="0.4657,0.1929,0.5642,0.289">
+                <div class="cmp-view" style="aspect-ratio: 679 / 698" data-left="Adam" tabindex="0" role="slider"
+                  aria-label="SDF, Armadillo, Adam versus ProPolar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <img class="cmp-img" src="static/images/qualitative/sdf_armadillo_adam.jpg" alt="Armadillo surface from a neural SDF with Adam" width="679" height="698" loading="lazy" decoding="async" draggable="false">
+                  <div class="cmp-top"><img class="cmp-img" src="static/images/qualitative/sdf_armadillo_ours.jpg" alt="Armadillo surface from a neural SDF with ProPolar" width="679" height="698" loading="lazy" decoding="async" draggable="false"></div>
+                  <div class="cmp-mark" aria-hidden="true"><span style="left:46.57%;top:19.29%;width:9.85%;height:9.61%"></span></div>
+                  <span class="cmp-divider" aria-hidden="true"></span>
+                  <span class="cmp-knob" aria-hidden="true"></span>
+                  <span class="cmp-tag cmp-tag-left" aria-hidden="true">Adam</span>
+                  <span class="cmp-tag cmp-tag-right" aria-hidden="true">ProPolar</span>
+                </div>
+                <figcaption class="cmp-caption">
+                  <span><span class="cmp-title">SDF, Armadillo</span><span class="cmp-note">ReLU MLP on the Stanford 3D Scanning Repository.</span></span>
+                  <button class="cmp-zoom" type="button" aria-pressed="false"><i class="fas fa-search-plus" aria-hidden="true"></i><span class="cmp-zoom-label">Zoom</span></button>
+                </figcaption>
+              </figure>
+              <figure class="cmp-card" data-zoom="0.1493,0.1627,0.3772,0.4668">
+                <div class="cmp-view" style="aspect-ratio: 1024 / 768" data-left="Adam" tabindex="0" role="slider"
+                  aria-label="SDF, Dragon, Adam versus ProPolar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <img class="cmp-img" src="static/images/qualitative/sdf_dragon_adam.jpg" alt="Dragon surface from a neural SDF with Adam" width="1024" height="768" loading="lazy" decoding="async" draggable="false">
+                  <div class="cmp-top"><img class="cmp-img" src="static/images/qualitative/sdf_dragon_ours.jpg" alt="Dragon surface from a neural SDF with ProPolar" width="1024" height="768" loading="lazy" decoding="async" draggable="false"></div>
+                  <div class="cmp-mark" aria-hidden="true"><span style="left:14.93%;top:16.27%;width:22.79%;height:30.41%"></span></div>
+                  <span class="cmp-divider" aria-hidden="true"></span>
+                  <span class="cmp-knob" aria-hidden="true"></span>
+                  <span class="cmp-tag cmp-tag-left" aria-hidden="true">Adam</span>
+                  <span class="cmp-tag cmp-tag-right" aria-hidden="true">ProPolar</span>
+                </div>
+                <figcaption class="cmp-caption">
+                  <span><span class="cmp-title">SDF, Dragon</span><span class="cmp-note">ReLU MLP on the Stanford 3D Scanning Repository.</span></span>
+                  <button class="cmp-zoom" type="button" aria-pressed="false"><i class="fas fa-search-plus" aria-hidden="true"></i><span class="cmp-zoom-label">Zoom</span></button>
+                </figcaption>
+              </figure>
+              <figure class="cmp-card" data-zoom="0.0122,0.855,0.16,1">
+                <div class="cmp-view" style="aspect-ratio: 378 / 378" data-left="Muon" tabindex="0" role="slider"
+                  aria-label="NeRF, T-Rex, Muon versus ProPolar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <img class="cmp-img" src="static/images/qualitative/nerf_trex_muon.jpg" alt="Novel view of the LLFF T-Rex scene with Muon" width="378" height="378" loading="lazy" decoding="async" draggable="false">
+                  <div class="cmp-top"><img class="cmp-img" src="static/images/qualitative/nerf_trex_ours.jpg" alt="Novel view of the LLFF T-Rex scene with ProPolar" width="378" height="378" loading="lazy" decoding="async" draggable="false"></div>
+                  <div class="cmp-mark" aria-hidden="true"><span style="left:1.22%;top:85.50%;width:14.78%;height:14.50%"></span></div>
+                  <span class="cmp-divider" aria-hidden="true"></span>
+                  <span class="cmp-knob" aria-hidden="true"></span>
+                  <span class="cmp-tag cmp-tag-left" aria-hidden="true">Muon</span>
+                  <span class="cmp-tag cmp-tag-right" aria-hidden="true">ProPolar</span>
+                </div>
+                <figcaption class="cmp-caption">
+                  <span><span class="cmp-title">NeRF, T-Rex</span><span class="cmp-note">Real-world LLFF scene.</span></span>
+                  <button class="cmp-zoom" type="button" aria-pressed="false"><i class="fas fa-search-plus" aria-hidden="true"></i><span class="cmp-zoom-label">Zoom</span></button>
+                </figcaption>
+              </figure>
+              <figure class="cmp-card" data-zoom="0.4277,0.4514,0.5544,0.5781">
+                <div class="cmp-view" style="aspect-ratio: 400 / 400" data-left="Muon" tabindex="0" role="slider"
+                  aria-label="NeRF, Ship, Muon versus ProPolar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <img class="cmp-img" src="static/images/qualitative/nerf_ship_muon.jpg" alt="Novel view of the Blender Ship scene with Muon" width="400" height="400" loading="lazy" decoding="async" draggable="false">
+                  <div class="cmp-top"><img class="cmp-img" src="static/images/qualitative/nerf_ship_ours.jpg" alt="Novel view of the Blender Ship scene with ProPolar" width="400" height="400" loading="lazy" decoding="async" draggable="false"></div>
+                  <div class="cmp-mark" aria-hidden="true"><span style="left:42.77%;top:45.14%;width:12.67%;height:12.67%"></span></div>
+                  <span class="cmp-divider" aria-hidden="true"></span>
+                  <span class="cmp-knob" aria-hidden="true"></span>
+                  <span class="cmp-tag cmp-tag-left" aria-hidden="true">Muon</span>
+                  <span class="cmp-tag cmp-tag-right" aria-hidden="true">ProPolar</span>
+                </div>
+                <figcaption class="cmp-caption">
+                  <span><span class="cmp-title">NeRF, Ship</span><span class="cmp-note">Synthetic Blender scene.</span></span>
+                  <button class="cmp-zoom" type="button" aria-pressed="false"><i class="fas fa-search-plus" aria-hidden="true"></i><span class="cmp-zoom-label">Zoom</span></button>
+                </figcaption>
+              </figure>
+              <figure class="cmp-card is-last-odd" data-zoom="0.4212,0.2882,0.4928,0.3598">
+                <div class="cmp-view" style="aspect-ratio: 800 / 800" data-left="Muon" tabindex="0" role="slider"
+                  aria-label="Fine-tuning, Lego, Muon versus ProPolar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <img class="cmp-img" src="static/images/qualitative/finetune_lego_muon.jpg" alt="Lego scene after NeRF fine-tuning with Muon" width="800" height="800" loading="lazy" decoding="async" draggable="false">
+                  <div class="cmp-top"><img class="cmp-img" src="static/images/qualitative/finetune_lego_ours.jpg" alt="Lego scene after NeRF fine-tuning with ProPolar" width="800" height="800" loading="lazy" decoding="async" draggable="false"></div>
+                  <div class="cmp-mark" aria-hidden="true"><span style="left:42.12%;top:28.82%;width:7.16%;height:7.16%"></span></div>
+                  <span class="cmp-divider" aria-hidden="true"></span>
+                  <span class="cmp-knob" aria-hidden="true"></span>
+                  <span class="cmp-tag cmp-tag-left" aria-hidden="true">Muon</span>
+                  <span class="cmp-tag cmp-tag-right" aria-hidden="true">ProPolar</span>
+                </div>
+                <figcaption class="cmp-caption">
+                  <span><span class="cmp-title">Fine-tuning, Lego</span><span class="cmp-note">Refinement stage after coarse reconstruction.</span></span>
+                  <button class="cmp-zoom" type="button" aria-pressed="false"><i class="fas fa-search-plus" aria-hidden="true"></i><span class="cmp-zoom-label">Zoom</span></button>
+                </figcaption>
+              </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== BIBTEX ============================== -->
+    <section class="section" id="BibTeX">
+      <div class="container is-max-desktop content">
+        <div class="bibtex-header" style="display:flex; align-items:center; gap:0.75rem;">
+          <h2 class="title" style="margin-bottom:0;">BibTeX</h2>
+          <button class="copy-bibtex-btn button is-small" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
+            <span class="icon"><i class="fas fa-copy"></i></span>
+            <span class="copy-text">Copy</span>
+          </button>
+        </div>
+        <pre id="bibtex-code"><code>@inproceedings{kim2026propolar,
+  title     = {{ProPolar}: Progressive Polar Decomposition for Implicit Neural Representations},
+  author    = {Pureum Kim and Younggeon Ryu and Dongyoon Lee and Hae Beom Lee and Kyong Hwan Jin},
+  booktitle = {Advances in Neural Information Processing Systems},
+  year      = {2026}
+}</code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged figure">
+    <a class="lightbox-full" href="static/images/propolar_teaser_full.jpg" target="_blank" rel="noopener">
+      Open full resolution <i class="fas fa-external-link-alt"></i>
+    </a>
+    <button class="lightbox-close" type="button" aria-label="Close">&times;</button>
+    <img alt="">
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This page was built using the
+              <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank"
+                rel="noopener">Academic Project Page Template</a>,
+              which was adopted from the <a href="https://nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>
+              project page, and follows the layout of the
+              <a href="https://hyeon-cho.github.io/TAG/" target="_blank" rel="noopener">TAG project page</a>.
+              You are free to borrow the source of this site; please link back to this page in the footer.
+              This website is licensed under a
+              <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons
+                Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
